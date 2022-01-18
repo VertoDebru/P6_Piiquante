@@ -6,6 +6,13 @@ exports.getAllSauces = (req,res) => {
     .catch(error => res.status(400).json({ error }));
 };
 
+exports.getSauce = (req,res) => {
+  const sauceId = req.path.split('/').join('');
+  Sauces.findById(sauceId)
+  .then(sauce => res.status(200).json(sauce))
+  .catch(error => res.status(400).json({ error }));
+};
+
 exports.createSauce = (req,res) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
