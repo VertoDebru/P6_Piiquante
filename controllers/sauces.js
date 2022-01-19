@@ -5,12 +5,33 @@ exports.getAllSauces = (req,res) => {
     .then(sauces => res.status(200).json(sauces))
     .catch(error => res.status(400).json({ error }));
 };
-
+ 
 exports.getSauce = (req,res) => {
   const sauceId = req.path.split('/').join('');
   Sauces.findById(sauceId)
   .then(sauce => res.status(200).json(sauce))
   .catch(error => res.status(400).json({ error }));
+};
+
+exports.editSauce = (req,res) => {
+  const sauceId = req.path.split('/').join('');
+  /*Sauces.findById(sauceId)
+  .then(sauce => res.status(200).json(sauce))
+  .catch(error => res.status(400).json({ error }));*/
+};
+
+exports.deleteSauce = (req,res) => {
+  const sauceId = req.path.split('/').join('');
+  /*Sauces.findById(sauceId)
+  .then(sauce => res.status(200).json(sauce))
+  .catch(error => res.status(400).json({ error }));*/
+};
+
+exports.likeSauce = (req,res) => {
+  const sauceId = req.path.split('/').join('');
+  /*Sauces.findById(sauceId)
+  .then(sauce => res.status(200).json(sauce))
+  .catch(error => res.status(400).json({ error }));*/
 };
 
 exports.createSauce = (req,res) => {
