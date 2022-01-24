@@ -26,8 +26,12 @@ exports.editSauce = (req,res) => {
 };
 
 exports.deleteSauce = (req,res) => {
+  console.log("Test User ID :");
+  console.log(res.locals.userId);
   Sauces.findOne({ _id: req.params.id })
   .then(sauce => {
+    if(res.locals.userId !== sauce.userId ) return res.status(403).json({ message: 'Vous ne pouvez pas modifier cette sauce!' });
+
     const filename = sauce.imageUrl.split('/images/')[1];
     fs.unlink(`images/${filename}`, () => {
       Sauces.deleteOne({ _id: req.params.id })
@@ -43,33 +47,42 @@ exports.likeSauce = (req,res) => {
   const likeStatus = req.body.like;
   const userId = req.body.userId;
   switch(likeStatus) {
+    // Si il s'agit d'un like
     case 1:
-      Sauces.updateOne({ _id: sauceId }, { likes: +1, usersLiked: userId })
+      Sauces.updateOne({ _id: sauceId }, { $inc: { likes: +1 }, $push: { usersLiked: userId } })
       .then(() => res.status(200).json({ message: 'Like enregistré !'}))
       .catch(error => res.status(400).json({ error }));
       break;
+    // Si il s'agit d'un dislike
     case -1:
-      Sauces.updateOne({ _id: sauceId }, { dislikes: +1, usersDisliked: userId })
+      Sauces.updateOne({ _id: sauceId }, { $inc: { dislikes: +1 }, $push: { usersDisliked: userId } })
       .then(() => res.status(200).json({ message: 'Dislike enregistré !'}))
       .catch(error => res.status(400).json({ error }));
       break;
+    // Pour retiré son like/dislike
     case 0:
       Sauces.findOne({ _id: sauceId })
       .then( sauce => {
+        // Si l'userId existe dans 'usersLiked'
         if(sauce.usersLiked.includes(userId)) {
-          sauce.usersLiked.pull(userId);
-          sauce.likes--;
-          sauce.save()
+          Sauces.updateOne(
+            { _id: sauceId },
+            { $inc: { likes: -1 }, $pull: { usersLiked: userId } }
+          )
           .then(() => res.status(201).json({ message: "Like retiré !" }))
           .catch((error) => res.status(400).json({ error }));
-        } 
+        }
+        // Si l'userId existe dans 'usersDisliked'
         else if(sauce.usersDisliked.includes(userId)) {
-          sauce.usersDisliked.pull(userId);
-          sauce.dislikes--;
-          sauce.save()
+          Sauces.updateOne(
+            { _id: sauceId },
+            { $inc: { dislikes: -1 }, $pull: { usersDisliked: userId } }
+          )
           .then(() => res.status(201).json({ message: "Dislike retiré !" }))
           .catch((error) => res.status(400).json({ error }));
-        } else {
+        }
+        // Si userId n'est pas présent dans les Arrays.
+        else {
           res.status(403).json({ message: "Impossible d'interagir."})
           .catch((error) => res.status(400).json({ error }));
         }
