@@ -1,12 +1,14 @@
 const fs = require('fs');
 const Sauces = require('../models/Sauces');
 
+// Récupération de toutes les sauces.
 exports.getAllSauces = (req,res) => {
   Sauces.find()
   .then(sauces => res.status(200).json(sauces))
   .catch(error => res.status(400).json({ error }));
 };
- 
+
+// Récupération d'une sauce.
 exports.getSauce = (req,res) => {
   const sauceId = req.params.id;
   Sauces.findById(sauceId)
@@ -14,23 +16,29 @@ exports.getSauce = (req,res) => {
   .catch(error => res.status(400).json({ error }));
 };
 
+// Modification d'une sauce.
 exports.editSauce = (req,res) => {
-  const sauceObject = req.file ?
-  {
-    ...JSON.parse(req.body.sauce),
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } : { ...req.body };
-  Sauces.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id })
-  .then(() => res.status(200).json({ message: 'Objet modifié !'}))
-  .catch(error => res.status(400).json({ error }));
+  Sauces.findOne({ _id: req.params.id})
+  .then(sauce => {
+    if(res.locals.userId != sauce.userId ) return res.status(403).json({ message: 'Vous ne pouvez pas modifier cette sauce!' });
+  
+    const sauceObject = req.file ?
+    {
+      ...JSON.parse(req.body.sauce),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : { ...req.body };
+    Sauces.updateOne({ _id: req.params.id}, { ...sauceObject, _id: req.params.id })
+    .then(() => res.status(200).json({ message: 'Sauce modifié !'}))
+    .catch(error => res.status(400).json({ error }));
+  })
+  .catch(() => res.status(500).json({ message: 'Impossible de trouver la sauce à modifier!' }));
 };
 
+// Suppression d'un sauce.
 exports.deleteSauce = (req,res) => {
-  console.log("Test User ID :");
-  console.log(res.locals.userId);
   Sauces.findOne({ _id: req.params.id })
   .then(sauce => {
-    if(res.locals.userId !== sauce.userId ) return res.status(403).json({ message: 'Vous ne pouvez pas modifier cette sauce!' });
+    if(res.locals.userId != sauce.userId ) return res.status(403).json({ message: 'Vous ne pouvez pas supprimer cette sauce!' });
 
     const filename = sauce.imageUrl.split('/images/')[1];
     fs.unlink(`images/${filename}`, () => {
@@ -39,9 +47,10 @@ exports.deleteSauce = (req,res) => {
       .catch(error => res.status(400).json({ error }));
     });
   })
-  .catch(error => res.status(500).json({ error }));
+  .catch(() => res.status(500).json({ message: 'Impossible de trouver la sauce à supprimer!' }));
 };
 
+// Like/Dislike une sauce.
 exports.likeSauce = (req,res) => {
   const sauceId = req.params.id;
   const likeStatus = req.body.like;
@@ -87,11 +96,12 @@ exports.likeSauce = (req,res) => {
           .catch((error) => res.status(400).json({ error }));
         }
       })
-      .catch(error => res.status(500).json({ error }));
+      .catch(() => res.status(500).json({ message: 'Impossible de trouver la sauce!' }));
       break;
   }
 };
 
+// Création d'une sauce.
 exports.createSauce = (req,res) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
