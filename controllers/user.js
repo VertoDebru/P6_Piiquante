@@ -2,6 +2,7 @@ const bCrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// Inscription d'un utilisateur.
 exports.userSign = (req,res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(400).json({ error: 'Empty input!' });
@@ -24,6 +25,7 @@ exports.userSign = (req,res) => {
     .catch(error => res.status(500).json({ error }));
 };
 
+// Connexion d'un utilisateur.
 exports.userLogin = (req,res) => {
     if (!req.body.email || !req.body.password) {
         return res.status(400).json({ error: 'Empty input!' });

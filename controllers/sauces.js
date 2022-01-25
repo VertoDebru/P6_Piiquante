@@ -34,7 +34,7 @@ exports.editSauce = (req,res) => {
   .catch(() => res.status(500).json({ message: 'Impossible de trouver la sauce à modifier!' }));
 };
 
-// Suppression d'un sauce.
+// Suppression d'une sauce.
 exports.deleteSauce = (req,res) => {
   Sauces.findOne({ _id: req.params.id })
   .then(sauce => {

@@ -9,9 +9,11 @@ const MY_PORT = process.env.PORT;
 app.set('port', MY_PORT);
 const server = http.createServer(app);
 
+// Démarrage du serveur.
 server.on('error', (err) => {
     console.log(`Server Error | ${err}`);
 });
+// Serveur en ligne.
 server.listen(MY_PORT, () => {
     console.log(`Server running on port ${MY_PORT}`);
     mongoose.connect(DB_MONGODB,

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema for MongoDB.
 const saucesSchema = mongoose.Schema({
   userId: { type: String, required: true },
   name: { type: String, required: true },
